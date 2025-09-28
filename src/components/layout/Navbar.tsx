@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/auth/AuthContext'; // Updated to correct path
 import { Menu, X, ChevronDown, LogOut, User, BookOpen, BarChart, Briefcase, Info, HelpCircle, HeartHandshake, MapPin } from 'lucide-react';
 import {
   DropdownMenu,
@@ -35,11 +35,12 @@ const Navbar = () => {
     { name: 'Courses', href: '/home' },
     { name: 'About Us', href: '/about' },
     { name: 'FAQ', href: '/faq' },
-    { name: 'College Finder', href: '/college-finder' }, // Added College Finder link
+    { name: 'College Finder', href: '/college-finder' },
     ...(isAuthenticated
       ? [
           { name: 'Job Search', href: '/jobs' },
           { name: 'Leaderboard', href: '/leaderboard' },
+          { name: 'Course to Career', href: '/course-to-career' }, // Fixed path
         ]
       : []),
   ];
@@ -47,12 +48,10 @@ const Navbar = () => {
   return (
     <header className="bg-background border-b border-border z-40 fixed w-full top-0">
       <div className="container mx-auto px-4 flex h-16 items-center justify-between">
-        {/* Logo */}
         <Link to="/" className="flex items-center space-x-2">
           <span className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">SkillFlowAI</span>
         </Link>
 
-        {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
           {navLinks.map((link) => (
             <Link
@@ -65,10 +64,8 @@ const Navbar = () => {
           ))}
         </nav>
 
-        {/* Action Buttons */}
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -90,7 +87,7 @@ const Navbar = () => {
                   <BookOpen className="mr-2 h-4 w-4" />
                   <span>My Courses</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/career-to-course')}>
+                <DropdownMenuItem onClick={() => navigate('/course-to-career')}>
                   <BarChart className="mr-2 h-4 w-4" />
                   <span>Course to Career</span>
                 </DropdownMenuItem>
@@ -135,8 +132,6 @@ const Navbar = () => {
               </Link>
             </>
           )}
-          
-          {/* Mobile Menu Toggle */}
           <button
             className="md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -149,8 +144,7 @@ const Navbar = () => {
           </button>
         </div>
       </div>
-      
-      {/* Mobile Navigation */}
+
       {mobileMenuOpen && (
         <div className="md:hidden px-4 py-4 bg-background border-t">
           <nav className="flex flex-col space-y-4">

@@ -21,6 +21,7 @@ import AboutUs from './pages/AboutUs';
 import FAQ from './pages/FAQ';
 import ParentsCounseling from './pages/ParentsCounseling';
 import CollegeFinder from './pages/CollegeFinder';
+import CourseToCareer from './pages/CourseToCareer';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
@@ -129,5 +130,9 @@ export const router = createBrowserRouter([
   {
     path: '/college-finder',
     element: <CollegeFinder />
-  }
+  },
+  {
+  path: '/course-to-career',
+  element: <CourseToCareer />,
+}
 ]);

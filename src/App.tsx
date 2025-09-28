@@ -11,7 +11,7 @@ import { router } from "./router";
 import { ChatbotProvider } from "@/context/ChatbotContext";
 import { AdminProvider } from "@/context/AdminContext";
 import Chatbot from "@/components/ui/Chatbot";
-import AboutUs from '@/pages/Aboutus'; // Adjust path if needed
+// import AboutUs from '@/pages/AboutUs'; // Uncomment and use if AboutUs is needed in this file
 import FAQ from '@/pages/FAQ'; // Import the FAQ page
 const queryClient = new QueryClient();
 
