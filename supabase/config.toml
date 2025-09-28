@@ -1,0 +1,44 @@
+
+project_id = "ncmrsccaleuhlthxkpxq"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+
+[db]
+port = 54322
+
+[studio]
+port = 54323
+
+[inbucket]
+port = 54324
+
+[auth]
+enabled = true
+port = 54325
+
+[storage]
+enabled = true
+port = 54326
+buckets_warm_up = false
+
+[realtime]
+enabled = true
+port = 54327
+
+[edge_functions]
+port = 54328
+
+[misc]
+port = 54329
+
+[migrations]
+safe_migrations = true
+migration_timeout = 600
+
+[[migrations.migrate_via_console]]
+if_not_exists = true
+remote_table = "migrations"
+column = "version"

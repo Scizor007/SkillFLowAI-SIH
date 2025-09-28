@@ -1,0 +1,6 @@
+
+[project_id]
+id = "ncmrsccaleuhlthxkpxq"
+
+[functions.generate-course-content]
+verify_jwt = false
