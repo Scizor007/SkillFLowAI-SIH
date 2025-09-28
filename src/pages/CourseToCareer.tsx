@@ -4,7 +4,6 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GraduationCap, Target, Lightbulb, Rocket, Save, RefreshCw, Users, ChevronRight, Sparkles } from 'lucide-react';
 import "reactflow/dist/style.css";
 
-
 // Initialize Gemini
 const API_KEY = 'AIzaSyDzuqV0Pm_TNmyUunUlrAjXGdwjxhOCeCw';
 const genAI = new GoogleGenerativeAI(API_KEY);
@@ -206,51 +205,45 @@ const CourseToCareer = () => {
       const prompt = `Act as an intelligent career advisor for students exploring education and career options.
 
 User Profile:
-- Interests & Passions: ${state.interests}
-- Strengths: ${state.strengths}
-- Career Goals: ${state.goals}
+
+Interests & Passions: ${state.interests}
+
+Strengths: ${state.strengths}
+
+Career Goals: ${state.goals}
 
 Step 1: Analyze these and suggest 3-5 related courses or academic streams that match, with a short explanation for each.
 
 Step 2: Generate a personalized suggestion paragraph describing ideal career paths, required skills, and real-world opportunities that fit the user’s profile.
 
-Step 3: Create a clear roadmap diagram showing the pathway from course selection, through key educational milestones, to possible careers, including recommended exams, skill-building tasks, internships, and jobs. Use concise text and tag the subject, courses, milestones, and outcomes.
+Step 3: Construct a JSON roadmap with nodes and edges forming a clear, connected tree (hierarchical) diagram for React Flow.
 
-IMPORTANT: Output ONLY the JSON object as plain text, without any markdown code blocks, backticks, or additional text. Start directly with { and end with }.
+Limit to 4-5 nodes total: Start with one "Interest Selection" node at the top, branching into up to 3 recommended courses.
+
+For each course, include 1 key milestone node and 1 career outcome node.
+
+Assign unique node IDs, descriptive labels, and vertical positions with clear logical flow from top to bottom.
+
+Connect all nodes with edges to show a clear path (Interest → Course → Milestone → Career).
+
+Use colors: green for start, blue for courses, orange for milestones, red for careers.
+
+Use concise text, no node overlaps, and ensure a simple vertical layout for easy comprehension.
+
+Example branch: Interest Selection -> Course (e.g., Computer Science) -> Milestone (e.g., JEE Exam) -> Career Outcome (e.g., Software Engineer). 
+
+IMPORTANT: Output ONLY the JSON object as plain text, no markdown. Start directly with { and end with }.
 
 {
-  "recommendations": [
-    {
-      "name": "Course Name",
-      "explanation": "Short explanation of why it matches."
-    }
-  ],
-  "careerParagraph": "A detailed, motivating paragraph summarizing the career path, skills, and opportunities.",
-  "roadmap": {
-    "nodes": [
-      {
-        "id": "1",
-        "type": "input",
-        "data": { "label": "Interest Selection\n(Your Interests)" },
-        "position": { "x": 250, "y": 25 },
-        "style": { "background": "#10b981", "color": "white", "width": 150, "height": 60 }
-      },
-      // Add 4-6 more nodes with unique ids, types (e.g., 'default', 'input', 'output'), labels, positions (x/y spaced logically), and styles (background colors)
-    ],
-    "edges": [
-      {
-        "id": "e1-2",
-        "source": "1",
-        "target": "2",
-        "animated": true,
-        "style": { "stroke": "#10b981" }
-      }
-      // Add edges connecting nodes logically
-    ]
-  }
+"recommendations": [ ... ],
+"careerParagraph": "...",
+"roadmap": {
+"nodes": [ ... ],
+"edges": [ ... ] 
+}
 }
 
-Ensure the roadmap has 4-6 nodes in a logical flow (e.g., Start -> Course -> Milestone -> Skills -> Career). Use green for start, blue for courses, orange for milestones, purple for skills, red for careers. Positions should form a vertical or horizontal path. Suggestions must be practical and tailored.`;
+Tips: Structure must form a tree, not a linear flow. Ensure clarity for React Flow visualization.`;
 
       const result = await model.generateContent(prompt);
       const response = await result.response.text();
