@@ -4,146 +4,196 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { MapPin, Search, GraduationCap, Navigation, BookOpen, Users, Star, ChevronRight, ArrowRight } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MapPin, Search, GraduationCap, Navigation, BookOpen, ChevronRight, ArrowRight, ChevronLeft } from 'lucide-react';
 
-// Mock data for Hyderabad colleges
-const hyderabadColleges = [
+const API_BASE = 'https://colleges-api.onrender.com';
+
+// Fallback static data for states and districts
+const STATIC_STATES = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand',
+  'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur',
+  'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
+  'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+  'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
+];
+
+const STATIC_DISTRICTS: { [key: string]: string[] } = {
+  'Telangana': ['Adilabad', 'Bhadradri Kothagudem', 'Hyderabad', 'Jagtial', 'Jangaon', 'Jayashankar Bhupalpally', 'Jogulamba Gadwal', 'Kamareddy', 'Karimnagar', 'Khammam', 'Komaram Bheem Asifabad', 'Mahabubabad', 'Mahabubnagar', 'Mancherial', 'Medak', 'Medchal Malkajgiri', 'Mulugu', 'Nagarkurnool', 'Nalgonda', 'Narayanpet', 'Nirmal', 'Nizamabad', 'Peddapalli', 'Rajanna Sircilla', 'Ranga Reddy', 'Sangareddy', 'Siddipet', 'Suryapet', 'Vikarabad', 'Wanaparthy', 'Warangal Rural', 'Warangal Urban', 'Yadadri Bhuvanagiri'],
+  // Add more states as needed
+  'Andhra Pradesh': ['Anantapur', 'Chittoor', 'East Godavari', 'Guntur', 'Krishna', 'Kurnool', 'Visakhapatnam', 'Vizianagaram', 'West Godavari', 'Y.S.R. Kadapa'],
+  // ... other states
+};
+
+interface College {
+  Name: string;
+  State: string;
+  City: string;
+  Address_line1: string;
+  Address_line2: string;
+}
+
+interface ApiResponse {
+  colleges: College[] | null;
+  count: number;
+  currentPage: number;
+  pages: number;
+}
+
+// Mock fallback colleges for demonstration (since API may return null)
+const MOCK_COLLEGES: College[] = [
   {
-    id: 1,
-    name: 'Osmania University',
-    state: 'Telangana',
-    area: 'Hyderabad',
-    address: 'Osmania University Campus, Hyderabad-500007',
-    lat: 17.4118,
-    lng: 78.5274,
-    rating: 4.2,
-    students: '45,000+',
-    established: 1918,
-    type: 'Public University',
-    image: 'https://images.unsplash.com/photo-1562774053-701939374585?w=400&h=250&fit=crop',
-    courses: [
-      { name: 'University College of Arts and Social Sciences', degree: 'B.A.' },
-      { name: 'University College of Law', degree: 'LL.B.' },
-      { name: 'University College of Science', degree: 'B.Sc.' },
-      { name: 'University College of Commerce and Business Management', degree: 'B.Com.' },
-      { name: 'University College of Technology', degree: 'B.Tech.' },
-    ],
+    Name: 'Osmania University',
+    State: 'Telangana',
+    City: 'Hyderabad',
+    Address_line1: 'Osmania University Main Road, Amberpet',
+    Address_line2: 'Tarnaka, Secunderabad, Hyderabad, Telangana 500007'
   },
   {
-    id: 2,
-    name: 'Nizam College',
-    state: 'Telangana',
-    area: 'Basheer Bagh, Hyderabad',
-    address: 'LB Stadium Road, Gun Foundry, Basheer Bagh, Hyderabad',
-    lat: 17.3850,
-    lng: 78.4740,
-    rating: 4.0,
-    students: '8,500+',
-    established: 1887,
-    type: 'Government College',
-    image: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&h=250&fit=crop',
-    courses: [
-      { name: 'Bachelor of Sciences', degree: 'B.Sc.' },
-      { name: 'Bachelor of Commerce', degree: 'B.Com.' },
-      { name: 'Bachelor of Arts - Telugu Medium', degree: 'B.A.' },
-      { name: 'Bachelor of Arts - English Medium', degree: 'B.A.' },
-      { name: 'Bachelor of Business Administration', degree: 'BBA' },
-    ],
+    Name: 'Nizam College',
+    State: 'Telangana',
+    City: 'Hyderabad',
+    Address_line1: 'Opposite LB Stadium Road, Gun Foundry',
+    Address_line2: 'Basheer Bagh, Hyderabad, Telangana 500001'
   },
   {
-    id: 3,
-    name: 'Indian Institute of Management and Commerce',
-    state: 'Telangana',
-    area: 'Khairtabad, Hyderabad',
-    address: '6-1-91, Adj. Telephone Bhavan, Khairtabad, Hyderabad-50004',
-    lat: 17.4061,
-    lng: 78.4648,
-    rating: 3.8,
-    students: '2,200+',
-    established: 1995,
-    type: 'Private Institute',
-    image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=250&fit=crop',
-    courses: [
-      { name: 'B.Com. (Hons)', degree: 'B.Com.' },
-      { name: 'B.Com. (Gen)', degree: 'B.Com.' },
-      { name: 'B.Com. (Computers)', degree: 'B.Com.' },
-      { name: 'BBA', degree: 'BBA' },
-      { name: 'M.Com.', degree: 'M.Com.' },
-    ],
+    Name: 'Indian Institute of Management and Commerce',
+    State: 'Telangana',
+    City: 'Hyderabad',
+    Address_line1: '6-1-91, Adjacent to Telephone Bhavan',
+    Address_line2: 'Khairatabad, Hyderabad, Telangana 500004'
   },
   {
-    id: 4,
-    name: 'St. Francis College for Women',
-    state: 'Telangana',
-    area: 'Begumpet, Hyderabad',
-    address: 'Uma Nagar, Begumpet, Hyderabad-500016',
-    lat: 17.4370,
-    lng: 78.4617,
-    rating: 4.3,
-    students: '3,500+',
-    established: 1959,
-    type: 'Private College',
-    image: 'https://images.unsplash.com/photo-1607013251379-e6eecfffe234?w=400&h=250&fit=crop',
-    courses: [
-      { name: 'PG Courses', degree: 'M.Sc.' },
-      { name: 'PG Diploma Courses', degree: 'PG Diploma' },
-      { name: 'UG Courses - Sciences', degree: 'B.Sc.' },
-      { name: 'UG Courses - Commerce', degree: 'B.Com.' },
-      { name: 'UG Courses - Arts', degree: 'B.A.' },
-    ],
+    Name: 'St. Francis College for Women',
+    State: 'Telangana',
+    City: 'Hyderabad',
+    Address_line1: '6, Uma Nagar, Begumpet',
+    Address_line2: 'Hyderabad, Telangana 500016'
   },
   {
-    id: 5,
-    name: "St. Ann's College for Women",
-    state: 'Telangana',
-    area: 'Mehdipatanam, Hyderabad',
-    address: 'Mehdipatanam, Hyderabad-500028',
-    lat: 17.3620,
-    lng: 78.4370,
-    rating: 4.1,
-    students: '2,800+',
-    established: 1956,
-    type: 'Private College',
-    image: 'https://images.unsplash.com/photo-1564981797816-1043664bf78d?w=400&h=250&fit=crop',
-    courses: [
-      { name: 'B.Sc. (Physical Science)', degree: 'B.Sc.' },
-      { name: 'B.Sc. (Biological Sciences)', degree: 'B.Sc.' },
-      { name: 'B.A.', degree: 'B.A.' },
-      { name: 'BBA', degree: 'BBA' },
-      { name: 'B.Com.', degree: 'B.Com.' },
-    ],
+    Name: "St. Ann's College for Women",
+    State: 'Telangana',
+    City: 'Hyderabad',
+    Address_line1: "12-2-823/A/45, St Ann's Road, Santosh Nagar",
+    Address_line2: 'Mehdipatnam, Hyderabad, Telangana 500028'
   },
+  // Add more mock data as needed
 ];
 
 const CollegeFinder: React.FC = () => {
-  const [state, setState] = useState('Telangana');
-  const [area, setArea] = useState('Hyderabad');
-  const [colleges, setColleges] = useState<typeof hyderabadColleges>([]);
-  const [loading, setLoading] = useState(false);
+  const [states, setStates] = useState<string[]>(STATIC_STATES);
+  const [districts, setDistricts] = useState<string[]>([]);
+  const [selectedState, setSelectedState] = useState<string>('Telangana');
+  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [colleges, setColleges] = useState<College[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [usingLocation, setUsingLocation] = useState(false);
-  const [userPosition] = useState<[number, number]>([17.3850, 78.4564]);
-  const [showMap, setShowMap] = useState(false);
+  const [usingLocation, setUsingLocation] = useState<boolean>(false);
+  const [showMap, setShowMap] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<boolean>(false);
 
   useEffect(() => {
-    handleSearch();
+    fetchStates();
   }, []);
 
-  const handleSearch = () => {
+  useEffect(() => {
+    if (selectedState) {
+      fetchDistricts(selectedState);
+    }
+  }, [selectedState]);
+
+  const fetchStates = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/colleges/states`);
+      if (!response.ok) throw new Error('Failed to fetch states');
+      const data: string[] = await response.json();
+      if (data && data.length > 0) {
+        setStates(data);
+        setApiError(false);
+      } else {
+        console.warn('API returned empty states, using fallback');
+        setApiError(true);
+      }
+    } catch (err) {
+      console.error('Error fetching states:', err);
+      setApiError(true);
+      // Use fallback states
+    }
+  };
+
+  const fetchDistricts = async (state: string) => {
+    try {
+      const encodedState = encodeURIComponent(state);
+      const response = await fetch(`${API_BASE}/colleges/${encodedState}/districts`);
+      if (!response.ok) throw new Error('Failed to fetch districts');
+      const data: string[] = await response.json();
+      if (data && data.length > 0) {
+        setDistricts(data);
+      } else {
+        // Use static districts if API fails
+        const staticDists = STATIC_DISTRICTS[state] || [];
+        setDistricts(staticDists);
+      }
+    } catch (err) {
+      console.error('Error fetching districts:', err);
+      // Use static districts
+      const staticDists = STATIC_DISTRICTS[state] || [];
+      setDistricts(staticDists);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!selectedState || !selectedCity) {
+      setError('Please select both state and city.');
+      return;
+    }
     setLoading(true);
     setError(null);
-    setTimeout(() => {
-      const filtered = hyderabadColleges.filter(
-        (college) =>
-          college.state.toLowerCase().includes(state.toLowerCase()) &&
-          college.area.toLowerCase().includes(area.toLowerCase())
-      );
-      setColleges(filtered);
-      setLoading(false);
-      if (filtered.length === 0) {
-        setError('No colleges found for the given location.');
+    try {
+      const encodedState = encodeURIComponent(selectedState);
+      const encodedCity = encodeURIComponent(selectedCity);
+      let url = `${API_BASE}/colleges/${encodedState}/${encodedCity}?page=${currentPage}&limit=10`;
+      if (searchQuery.trim()) {
+        url += `&search=${encodeURIComponent(searchQuery.trim())}`;
       }
-    }, 800);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch colleges');
+      const data: ApiResponse = await response.json();
+      if (data.colleges && data.colleges.length > 0) {
+        setColleges(data.colleges);
+        setTotalCount(data.count || 0);
+        setTotalPages(data.pages || 1);
+        setApiError(false);
+      } else {
+        // Fallback to mock data filtered by state and city
+        console.warn('API returned no colleges, using mock data');
+        const filteredMock = MOCK_COLLEGES.filter(
+          c => c.State === selectedState && c.City.toLowerCase().includes(selectedCity.toLowerCase())
+        );
+        setColleges(filteredMock);
+        setTotalCount(filteredMock.length);
+        setTotalPages(1);
+        setApiError(true);
+      }
+    } catch (err) {
+      console.error('Error fetching colleges:', err);
+      setApiError(true);
+      // Fallback to mock data
+      const filteredMock = MOCK_COLLEGES.filter(
+        c => c.State === selectedState && c.City.toLowerCase().includes(selectedCity.toLowerCase())
+      );
+      setColleges(filteredMock);
+      setTotalCount(filteredMock.length);
+      setTotalPages(1);
+      setError('API temporarily unavailable. Showing sample data for ' + selectedCity + ', ' + selectedState + '.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUseLocation = () => {
@@ -151,33 +201,62 @@ const CollegeFinder: React.FC = () => {
     setError(null);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setState('Telangana');
-          setArea('Hyderabad');
-          handleSearch();
-          setUsingLocation(false);
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          try {
+            const geoResponse = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1`
+            );
+            if (!geoResponse.ok) throw new Error('Geocoding failed');
+            const geoData = await geoResponse.json();
+            const address = geoData.address;
+            const state = address.state || 'Telangana'; // Fallback
+            const city = address.city || address.county || address.town || 'Hyderabad'; // Fallback
+            setSelectedState(state);
+            setSelectedCity(city);
+            // Wait a bit for districts to load
+            setTimeout(() => {
+              handleSearch();
+            }, 500);
+          } catch (err) {
+            setError('Failed to determine location. Using default: Telangana, Hyderabad.');
+            setSelectedState('Telangana');
+            setSelectedCity('Hyderabad');
+            setTimeout(() => handleSearch(), 500);
+          } finally {
+            setUsingLocation(false);
+          }
         },
         (err) => {
-          setError('Failed to get location: ' + err.message);
+          setError('Failed to get location: ' + err.message + '. Using default: Telangana, Hyderabad.');
+          setSelectedState('Telangana');
+          setSelectedCity('Hyderabad');
+          setTimeout(() => handleSearch(), 500);
           setUsingLocation(false);
         }
       );
     } else {
-      setError('Geolocation is not supported by this browser.');
+      setError('Geolocation is not supported. Using default: Telangana, Hyderabad.');
+      setSelectedState('Telangana');
+      setSelectedCity('Hyderabad');
+      setTimeout(() => handleSearch(), 500);
       setUsingLocation(false);
     }
   };
 
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 ${
-          i < Math.floor(rating) ? 'text-blue-400 fill-current' : 'text-gray-600'
-        }`}
-      />
-    ));
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      handleSearch(); // Re-fetch with new page
+    }
   };
+
+  useEffect(() => {
+    if (selectedState === 'Telangana') {
+      setSelectedCity('Hyderabad');
+    }
+  }, [selectedState]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800">
@@ -238,26 +317,45 @@ const CollegeFinder: React.FC = () => {
                 <Search className="w-8 h-8 text-blue-400" />
                 Search Colleges
               </CardTitle>
+              {apiError && (
+                <p className="text-sm text-yellow-400 mt-2">API may be temporarily unavailable. Using sample data.</p>
+              )}
             </CardHeader>
             <CardContent className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="space-y-3">
                   <Label htmlFor="state" className="text-lg font-semibold text-gray-300">State</Label>
-                  <Input
-                    id="state"
-                    value={state}
-                    onChange={(e) => setState(e.target.value)}
-                    placeholder="e.g., Telangana"
-                    className="h-12 text-lg bg-slate-800/50 border-slate-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/20"
-                  />
+                  <Select value={selectedState} onValueChange={setSelectedState}>
+                    <SelectTrigger className="h-12 text-lg bg-slate-800/50 border-slate-600 text-white">
+                      <SelectValue placeholder="Select State" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {states.map((state) => (
+                        <SelectItem key={state} value={state}>{state}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-3">
-                  <Label htmlFor="area" className="text-lg font-semibold text-gray-300">Area/City</Label>
+                  <Label htmlFor="city" className="text-lg font-semibold text-gray-300">City/District</Label>
+                  <Select value={selectedCity} onValueChange={setSelectedCity} disabled={districts.length === 0}>
+                    <SelectTrigger className="h-12 text-lg bg-slate-800/50 border-slate-600 text-white">
+                      <SelectValue placeholder={districts.length === 0 ? "Loading districts..." : "Select City"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {districts.map((district) => (
+                        <SelectItem key={district} value={district}>{district}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-3">
+                  <Label htmlFor="search" className="text-lg font-semibold text-gray-300">College Name (Optional)</Label>
                   <Input
-                    id="area"
-                    value={area}
-                    onChange={(e) => setArea(e.target.value)}
-                    placeholder="e.g., Hyderabad"
+                    id="search"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="e.g., Osmania"
                     className="h-12 text-lg bg-slate-800/50 border-slate-600 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/20"
                   />
                 </div>
@@ -265,7 +363,7 @@ const CollegeFinder: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
                   onClick={handleSearch} 
-                  disabled={loading}
+                  disabled={loading || !selectedState || !selectedCity}
                   className="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
                   <ArrowRight className="mr-2 h-5 w-5" />
@@ -284,6 +382,7 @@ const CollegeFinder: React.FC = () => {
                   variant="outline" 
                   onClick={() => setShowMap(!showMap)}
                   className="h-12 px-8 border-slate-600 bg-transparent text-gray-300 hover:bg-slate-800 hover:text-white font-semibold text-lg transition-all duration-300"
+                  disabled={colleges.length === 0}
                 >
                   <Navigation className="mr-2 h-5 w-5" />
                   {showMap ? 'Hide Map' : 'Show Map'}
@@ -298,7 +397,34 @@ const CollegeFinder: React.FC = () => {
           </Card>
         </div>
 
-        {/* Map Section */}
+        {/* Pagination */}
+        {totalPages > 1 && colleges.length > 0 && (
+          <div className="max-w-4xl mx-auto mb-8 flex justify-center items-center gap-4">
+            <Button
+              variant="outline"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="border-slate-600 bg-transparent text-gray-300 hover:bg-slate-800 hover:text-white"
+            >
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Previous
+            </Button>
+            <span className="text-white font-semibold">
+              Page {currentPage} of {totalPages} ({totalCount} total)
+            </span>
+            <Button
+              variant="outline"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="border-slate-600 bg-transparent text-gray-300 hover:bg-slate-800 hover:text-white"
+            >
+              Next
+              <ChevronRight className="h-4 w-4 ml-2" />
+            </Button>
+          </div>
+        )}
+
+        {/* Map Section (Simplified without real coords) */}
         {showMap && colleges.length > 0 && (
           <div className="max-w-6xl mx-auto mb-16">
             <Card className="bg-slate-900/80 backdrop-blur-sm border border-slate-700/50 shadow-2xl overflow-hidden">
@@ -310,127 +436,74 @@ const CollegeFinder: React.FC = () => {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="h-96 w-full rounded-lg overflow-hidden bg-slate-800">
-                  <div style={{ height: '100%', width: '100%' }}>
-                    <div className="relative h-full w-full bg-slate-800 border border-slate-700 rounded">
-                      {/* Simulated Map with College Markers */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-slate-700 to-slate-800">
-                        {/* Grid pattern to simulate map */}
-                        <div className="absolute inset-0 opacity-20">
-                          {Array.from({ length: 20 }).map((_, i) => (
-                            <div
-                              key={`v-${i}`}
-                              className="absolute w-px bg-slate-600"
-                              style={{
-                                left: `${(i + 1) * 5}%`,
-                                height: '100%',
-                              }}
-                            />
-                          ))}
-                          {Array.from({ length: 12 }).map((_, i) => (
-                            <div
-                              key={`h-${i}`}
-                              className="absolute h-px bg-slate-600"
-                              style={{
-                                top: `${(i + 1) * 8}%`,
-                                width: '100%',
-                              }}
-                            />
-                          ))}
-                        </div>
-                        
-                        {/* User location marker */}
+                  <div className="relative h-full w-full bg-gradient-to-br from-slate-700 to-slate-800">
+                    {/* Simulated grid and markers with random positions */}
+                    <div className="absolute inset-0 opacity-20">
+                      {Array.from({ length: 20 }).map((_, i) => (
                         <div
-                          className="absolute z-20 flex items-center justify-center"
-                          style={{
-                            left: '50%',
-                            top: '50%',
-                            transform: 'translate(-50%, -50%)',
-                          }}
-                        >
-                          <div className="relative">
-                            <div className="w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-lg animate-pulse"></div>
-                            <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap border border-slate-600">
-                              You are here
+                          key={`v-${i}`}
+                          className="absolute w-px bg-slate-600"
+                          style={{ left: `${(i + 1) * 5}%`, height: '100%' }}
+                        />
+                      ))}
+                      {Array.from({ length: 12 }).map((_, i) => (
+                        <div
+                          key={`h-${i}`}
+                          className="absolute h-px bg-slate-600"
+                          style={{ top: `${(i + 1) * 8}%`, width: '100%' }}
+                        />
+                      ))}
+                    </div>
+                    {/* User location marker */}
+                    <div
+                      className="absolute z-20 flex items-center justify-center"
+                      style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}
+                    >
+                      <div className="relative">
+                        <div className="w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-lg animate-pulse"></div>
+                        <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap border border-slate-600">
+                          You are here
+                        </div>
+                      </div>
+                    </div>
+                    {/* College markers with random positions */}
+                    {colleges.map((college, index) => (
+                      <div
+                        key={`${college.Name}-${index}`}
+                        className="absolute z-10 group cursor-pointer"
+                        style={{
+                          left: `${(index * 15 + Math.random() * 20) % 90 + 5}%`,
+                          top: `${(index * 20 + Math.random() * 15) % 80 + 10}%`,
+                          transform: 'translate(-50%, -50%)',
+                        }}
+                      >
+                        <div className="relative">
+                          <div className="w-6 h-6 bg-blue-500 rounded-full border-2 border-white shadow-lg hover:bg-blue-400 transition-colors group-hover:scale-110 transform duration-200">
+                            <GraduationCap className="w-3 h-3 text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                          </div>
+                          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30">
+                            <div className="bg-slate-900 text-white text-sm px-3 py-2 rounded-lg shadow-xl border border-slate-600 max-w-xs">
+                              <h4 className="font-bold text-blue-400 mb-1">{college.Name}</h4>
+                              <p className="text-gray-300 text-xs mb-2">{college.City}, {college.State}</p>
+                            </div>
+                            <div className="absolute top-full left-1/2 transform -translate-x-1/2">
+                              <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-900"></div>
                             </div>
                           </div>
                         </div>
-
-                        {/* College markers */}
-                        {colleges.map((college, index) => {
-                          // Calculate relative positions based on lat/lng differences
-                          const centerLat = 17.3850;
-                          const centerLng = 78.4564;
-                          const latDiff = (college.lat - centerLat) * 1000; // Scale factor
-                          const lngDiff = (college.lng - centerLng) * 1000; // Scale factor
-                          
-                          const x = 50 + lngDiff * 2; // Center at 50% + offset
-                          const y = 50 - latDiff * 2; // Center at 50% + offset (inverted for screen coords)
-                          
-                          return (
-                            <div
-                              key={college.id}
-                              className="absolute z-10 group cursor-pointer"
-                              style={{
-                                left: `${Math.max(5, Math.min(95, x))}%`,
-                                top: `${Math.max(5, Math.min(95, y))}%`,
-                                transform: 'translate(-50%, -50%)',
-                              }}
-                            >
-                              <div className="relative">
-                                <div className="w-6 h-6 bg-blue-500 rounded-full border-2 border-white shadow-lg hover:bg-blue-400 transition-colors group-hover:scale-110 transform duration-200">
-                                  <GraduationCap className="w-3 h-3 text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
-                                </div>
-                                
-                                {/* Popup on hover */}
-                                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30">
-                                  <div className="bg-slate-900 text-white text-sm px-3 py-2 rounded-lg shadow-xl border border-slate-600 max-w-xs">
-                                    <h4 className="font-bold text-blue-400 mb-1">{college.name}</h4>
-                                    <p className="text-gray-300 text-xs mb-2">{college.address}</p>
-                                    <div className="space-y-1">
-                                      {college.courses.slice(0, 3).map((course, idx) => (
-                                        <div key={idx} className="text-xs text-gray-400">
-                                          {course.name} ({course.degree})
-                                        </div>
-                                      ))}
-                                    </div>
-                                    <div className="flex items-center mt-2 gap-1">
-                                      {renderStars(college.rating)}
-                                      <span className="text-xs text-gray-400 ml-1">{college.rating}</span>
-                                    </div>
-                                  </div>
-                                  {/* Arrow pointing down */}
-                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2">
-                                    <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-900"></div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                        
-                        {/* Map legend */}
-                        <div className="absolute bottom-4 left-4 bg-slate-900/90 backdrop-blur-sm p-3 rounded-lg border border-slate-600">
-                          <h4 className="text-white font-semibold text-sm mb-2">Legend</h4>
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                              <span className="text-gray-300 text-xs">Your Location</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                              <span className="text-gray-300 text-xs">Colleges ({colleges.length})</span>
-                            </div>
-                          </div>
+                      </div>
+                    ))}
+                    {/* Legend */}
+                    <div className="absolute bottom-4 left-4 bg-slate-900/90 backdrop-blur-sm p-3 rounded-lg border border-slate-600">
+                      <h4 className="text-white font-semibold text-sm mb-2">Legend</h4>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          <span className="text-gray-300 text-xs">Your Location</span>
                         </div>
-                        
-                        {/* Map controls */}
-                        <div className="absolute top-4 right-4 flex flex-col gap-2">
-                          <button className="w-8 h-8 bg-slate-900/90 backdrop-blur-sm border border-slate-600 rounded text-white hover:bg-slate-800 transition-colors">
-                            +
-                          </button>
-                          <button className="w-8 h-8 bg-slate-900/90 backdrop-blur-sm border border-slate-600 rounded text-white hover:bg-slate-800 transition-colors">
-                            −
-                          </button>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                          <span className="text-gray-300 text-xs">Colleges ({colleges.length})</span>
                         </div>
                       </div>
                     </div>
@@ -449,82 +522,50 @@ const CollegeFinder: React.FC = () => {
                 Top Colleges Near Your City
               </h2>
               <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-                Found {colleges.length} excellent institutions personalized to your educational goals
+                Found {totalCount} institutions in {selectedCity}, {selectedState}
+                {apiError && ' (Sample Data)'}
               </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-              {colleges.map((college) => (
+              {colleges.map((college, index) => (
                 <Card 
-                  key={college.id} 
+                  key={`${college.Name}-${index}`} 
                   className="group bg-slate-900/60 backdrop-blur-sm border border-slate-700/50 hover:border-blue-500/30 transition-all duration-500 transform hover:-translate-y-2 hover:shadow-2xl shadow-xl overflow-hidden"
                 >
                   <div className="relative">
-                    <img 
-                      src={college.image} 
-                      alt={college.name}
-                      className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
-                    <div className="absolute top-4 right-4 bg-slate-900/90 backdrop-blur-sm px-3 py-1 rounded-full border border-slate-700/50">
-                      <span className="text-sm font-semibold text-gray-300">{college.type}</span>
-                    </div>
-                    <div className="absolute bottom-4 left-4 flex items-center gap-1 bg-slate-900/90 backdrop-blur-sm px-3 py-1 rounded-full border border-slate-700/50">
-                      {renderStars(college.rating)}
-                      <span className="text-sm font-semibold text-gray-300 ml-2">{college.rating}</span>
+                    <div className="w-full h-48 bg-gradient-to-br from-blue-900 to-slate-800 flex items-center justify-center">
+                      <GraduationCap className="w-16 h-16 text-blue-400 opacity-50" />
                     </div>
                   </div>
                   
                   <CardHeader className="pb-4">
                     <CardTitle className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
-                      {college.name}
+                      {college.Name}
                     </CardTitle>
                     <div className="flex items-center text-gray-400 text-sm">
                       <MapPin className="w-4 h-4 mr-1" />
-                      {college.area}
+                      {college.City}, {college.State}
                     </div>
                   </CardHeader>
 
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-blue-400" />
-                        <span className="text-gray-400">{college.students}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <BookOpen className="w-4 h-4 text-green-400" />
-                        <span className="text-gray-400">Est. {college.established}</span>
-                      </div>
-                    </div>
-
                     <Separator className="bg-slate-700" />
                     
                     <div>
                       <h4 className="font-semibold text-white mb-3 flex items-center gap-2">
-                        <GraduationCap className="w-4 h-4 text-blue-400" />
-                        Available Courses
+                        <MapPin className="w-4 h-4 text-blue-400" />
+                        Address
                       </h4>
-                      <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {college.courses.slice(0, 4).map((course, index) => (
-                          <div key={index} className="flex justify-between items-center p-2 bg-slate-800/50 rounded-lg text-sm border border-slate-700/30">
-                            <span className="text-gray-300">{course.name}</span>
-                            <span className="bg-blue-600/20 text-blue-400 px-2 py-1 rounded-full text-xs font-semibold border border-blue-500/30">
-                              {course.degree}
-                            </span>
-                          </div>
-                        ))}
-                        {college.courses.length > 4 && (
-                          <p className="text-sm text-gray-500 text-center pt-2">
-                            +{college.courses.length - 4} more courses available
-                          </p>
-                        )}
-                      </div>
+                      <p className="text-gray-300 text-sm">
+                        {college.Address_line1}, {college.Address_line2}
+                      </p>
                     </div>
 
                     <div className="flex gap-3 pt-4">
                       <Button 
                         className="flex-1 bg-blue-600 hover:bg-blue-700 text-white transition-all duration-300 transform hover:scale-105"
-                        onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${college.lat},${college.lng}`, '_blank')}
+                        onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${college.Name}, ${college.City}, ${college.State}`)}`, '_blank')}
                       >
                         <Navigation className="w-4 h-4 mr-2" />
                         Get Directions
